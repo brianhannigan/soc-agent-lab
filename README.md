@@ -1,106 +1,127 @@
 # 🛡️ SOC Agent Lab
-Autonomous AI Agents for SOC Alert Triage, Detection Engineering, and Log Intelligence
+
+Autonomous AI agents for SOC alert triage, detection engineering, and log intelligence.
+
+SOC Agent Lab is an educational project that shows how to design a **Security Operations Center (SOC)** workflow around modular AI agents. The focus is not “chatbot demos,” but practical SOC tasks: triaging alerts, grounding decisions with retrieval (RAG), generating detections, and learning from analyst feedback.
 
 ---
 
-## 📌 Overview
+## Table of Contents
 
-SOC Agent Lab is a simulated AI-powered Security Operations Center (SOC) automation platform.
-
-This project demonstrates how autonomous AI agents can:
-
-- Automate alert triage
-- Generate detection rules
-- Perform contextual log search
-- Reduce false positives
-- Implement feedback-driven learning loops
-- Scale SOC coverage without scaling headcount
-
-It models the architecture used by modern AI-driven SOC platforms.
-
----
-
-## 🎯 Project Goals
-
-This lab simulates:
-
-- Ingestion of structured security alerts
-- Embedding-based contextual retrieval (RAG)
-- Agent-based reasoning workflows
-- Detection-as-Code generation
-- Feedback loops for confidence calibration
-- Modular AI orchestration architecture
-
-The objective is to demonstrate real-world AI engineering patterns applied to security operations.
+1. [What You Will Build](#what-you-will-build)
+2. [Who This Tutorial Is For](#who-this-tutorial-is-for)
+3. [Learning Outcomes](#learning-outcomes)
+4. [Architecture at a Glance](#architecture-at-a-glance)
+5. [Repository Structure](#repository-structure)
+6. [Tutorial Walkthrough](#tutorial-walkthrough)
+   - [Step 1: Ingest Alerts](#step-1-ingest-alerts)
+   - [Step 2: Create Embeddings](#step-2-create-embeddings)
+   - [Step 3: Retrieve Context with Vector Search](#step-3-retrieve-context-with-vector-search)
+   - [Step 4: Triage with the SOC Agent](#step-4-triage-with-the-soc-agent)
+   - [Step 5: Generate Detection-as-Code](#step-5-generate-detection-as-code)
+   - [Step 6: Analyst Copilot via Chat Agent](#step-6-analyst-copilot-via-chat-agent)
+   - [Step 7: Close the Loop with Feedback](#step-7-close-the-loop-with-feedback)
+7. [Example End-to-End Flow](#example-end-to-end-flow)
+8. [Sample Data and Output Contracts](#sample-data-and-output-contracts)
+9. [Design Principles](#design-principles)
+10. [Future Enhancements](#future-enhancements)
+11. [Disclaimer](#disclaimer)
+12. [Author](#author)
 
 ---
 
-## 🏗️ Architecture Overview
+## What You Will Build
+
+You will build a simulated SOC automation pipeline where AI agents:
+
+- ingest and normalize alert data,
+- retrieve historical context using embeddings and vector search,
+- produce structured triage decisions,
+- suggest new detection rules,
+- support analysts through chat-based investigation, and
+- improve confidence calibration from analyst feedback.
+
+This mirrors the architecture patterns used in modern AI-enabled SOCs.
+
+## Who This Tutorial Is For
+
+This tutorial is designed for:
+
+- SOC analysts exploring AI-assisted triage,
+- detection engineers interested in Detection-as-Code,
+- security engineers building RAG-based workflows,
+- AI engineers looking for a realistic agentic security use case.
+
+## Learning Outcomes
+
+By the end, you should be able to:
+
+1. Explain how RAG reduces hallucination in security workflows.
+2. Design structured JSON contracts for agent outputs.
+3. Connect triage decisions to detection engineering automation.
+4. Build a feedback loop that improves risk and confidence scoring.
+
+---
+
+## Architecture at a Glance
+
+```text
 Log Sources
-↓
+  ↓
 Data Ingestion Layer
-↓
+  ↓
 Detection-as-Code Engine
-↓
+  ↓
 Alert Object Store
-↓
+  ↓
 Agent Orchestration Layer
-↓
+  ↓
 RAG Context Retrieval (Vector DB)
-↓
+  ↓
 SOC AI Agents
-↓
+  ↓
 Analyst Interaction
-↓
+  ↓
 Feedback Loop & Learning
-
+```
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
-
-
+```text
 soc-agent-lab/
-│
 ├── ingestion/
-│ └── alert_simulator.py
-│
+│   └── alert_simulator.py
 ├── embeddings/
-│ └── embed_pipeline.py
-│
+│   └── embed_pipeline.py
 ├── vector_store/
-│ └── vectordb.py
-│
+│   └── vectordb.py
 ├── agents/
-│ ├── triage_agent.py
-│ ├── detection_agent.py
-│ └── chat_agent.py
-│
+│   ├── triage_agent.py
+│   ├── detection_agent.py
+│   └── chat_agent.py
 ├── evaluation/
-│ └── feedback_loop.py
-│
+│   └── feedback_loop.py
 ├── api/
-│ └── main.py
-│
+│   └── main.py
 ├── data/
-│ └── sample_alerts.json
-│
+│   └── sample_alerts.json
 ├── requirements.txt
 └── README.md
+```
 
-
----
-
-# 🔎 System Components
+> Note: This lab emphasizes architecture and workflows. Some components may be simulated or stubbed depending on your implementation stage.
 
 ---
 
-## 1️⃣ Alert Ingestion Layer
+## Tutorial Walkthrough
 
-Simulates SIEM/XDR alerts.
+### Step 1: Ingest Alerts
 
-Example alert structure:
+Start by simulating SIEM/XDR-style alerts.
+
+Example alert:
 
 ```json
 {
@@ -111,305 +132,177 @@ Example alert structure:
   "source_ip": "185.231.44.12",
   "user": "svc_admin"
 }
+```
 
+Why this matters:
 
-This represents:
+- It is an off-hours login.
+- It comes from a public IP.
+- It uses a privileged/service-style account.
 
-Off-hours login
+These are exactly the signals triage models should weigh.
 
-Public IP
+### Step 2: Create Embeddings
 
-Privileged account
+Convert alerts, incidents, and playbook text into vector representations.
 
-Potential lateral movement
+Embeddings help the system:
 
-2️⃣ Embedding Pipeline
+- find similar historical alerts,
+- identify common false-positive patterns,
+- provide semantic context beyond exact keyword matching.
 
-Purpose:
+### Step 3: Retrieve Context with Vector Search
 
-Convert alerts and historical data into vector representations for similarity search.
+Apply Retrieval-Augmented Generation (RAG):
 
-Why Embeddings?
-
-Embeddings allow the system to:
-
-Find similar historical incidents
-
-Identify repeat false positives
-
-Contextualize new alerts
-
-Perform semantic search across logs and playbooks
-
-3️⃣ Vector Database (RAG Context Layer)
-
-Implements Retrieval-Augmented Generation (RAG).
-
-Workflow:
-
+```text
 New Alert → Embed → Search Vector DB → Retrieve Similar Alerts + Playbooks
+```
 
+The triage agent should reason using:
 
-The agent then reasons with:
+- the current alert,
+- similar incidents,
+- internal SOC procedures,
+- relevant threat intelligence notes.
 
-Current alert
+### Step 4: Triage with the SOC Agent
 
-Similar historical alerts
+The triage agent returns a **structured** decision:
 
-Internal SOC playbooks
-
-Threat intelligence references
-
-4️⃣ Triage Agent
-
-Primary responsibilities:
-
-Risk scoring
-
-Confidence scoring
-
-Escalation decision
-
-Reasoning summary
-
-Example output:
-
+```json
 {
   "risk_score": 87,
   "confidence": 0.91,
   "recommended_action": "Escalate to Tier 2",
   "reasoning_summary": "Off-hours admin logon from foreign IP with no prior baseline behavior"
 }
+```
 
+Key implementation guidance:
 
-Key design principles:
+- keep output deterministic,
+- enforce schema validation,
+- separate confidence from severity,
+- include concise reasoning for analyst trust.
 
-Structured JSON outputs
+### Step 5: Generate Detection-as-Code
 
-Deterministic fields
+Use alert patterns to propose new detections.
 
-Confidence calibration
+Example KQL output:
 
-Explainable reasoning
-
-5️⃣ Detection Generation Agent
-
-Generates detection rules based on alert patterns.
-
-Example output (KQL):
-
+```kql
 DeviceLogonEvents
 | where LogonType == "RemoteInteractive"
 | where RemoteIPType == "Public"
 | where Timestamp between (ago(7d) .. now())
 | summarize count() by DeviceName
+```
 
+This enables faster detection engineering and tighter feedback from operations to content creation.
 
-This enables:
+### Step 6: Analyst Copilot via Chat Agent
 
-Detection-as-Code automation
+The chat agent supports natural-language investigation.
 
-Rule templating
+Example analyst prompt:
 
-SOC engineering acceleration
+> Show me all off-hours interactive logons from public IP addresses in the past 7 days.
 
-Continuous improvement of detection coverage
+Typical capabilities:
 
-6️⃣ Chat Agent
+- explain incident context,
+- summarize likely root cause,
+- help refine detection logic,
+- accelerate hypothesis-driven hunting.
 
-Interactive assistant for analysts.
+### Step 7: Close the Loop with Feedback
 
-Capabilities:
+Capture analyst outcomes and feed them back into the system:
 
-Natural language log search
+- false-positive labels,
+- escalation overrides,
+- confidence disagreements,
+- final case disposition.
 
-Incident explanation
+Use this feedback to recalibrate:
 
-Detection refinement
+- risk scoring weights,
+- confidence thresholds,
+- prompt and retrieval strategies.
 
-Threat intel summarization
+---
 
-Example:
+## Example End-to-End Flow
 
-“Show me all off-hours interactive logons from public IP addresses in the past 7 days.”
+1. A suspicious off-hours admin login alert is generated.
+2. The alert is embedded and sent to the vector database.
+3. Similar historical incidents are retrieved.
+4. The triage agent assigns risk and confidence.
+5. The detection agent proposes a new detection rule.
+6. An analyst reviews and either confirms or overrides.
+7. The feedback loop updates model and policy behavior.
 
-7️⃣ Feedback Loop Engine
+---
 
-Critical component.
+## Sample Data and Output Contracts
 
-Tracks:
+### Input Alert Contract
 
-Analyst overrides
+```json
+{
+  "alert_id": "string",
+  "device": "string",
+  "event_type": "string",
+  "timestamp": "ISO-8601 datetime",
+  "source_ip": "ip-string",
+  "user": "string"
+}
+```
 
-False positive classifications
+### Triage Output Contract
 
-Escalation correctness
+```json
+{
+  "risk_score": "0-100 integer",
+  "confidence": "0.0-1.0 float",
+  "recommended_action": "string",
+  "reasoning_summary": "string"
+}
+```
 
-Confidence misalignment
+Use strict contracts to prevent unstructured output drift and simplify downstream automation.
 
-Implements:
+---
 
-Confidence recalibration
+## Design Principles
 
-Risk weighting adjustment
+- **Modular agent architecture**: triage, detection, and chat components remain independently evolvable.
+- **Deterministic outputs**: JSON schemas support automation and auditability.
+- **RAG over guessing**: decisions are grounded in retrievable context.
+- **SOC-centric UX**: optimize for analyst speed, trust, and case quality.
 
-Prompt optimization inputs
+---
 
-Continuous learning signals
+## Future Enhancements
 
-🧠 Engineering Design Principles
-Modular Agent Architecture
+- Multi-agent coordination framework
+- Persistent memory across incident timelines
+- More formal confidence calibration models
+- Threat intelligence API integrations
+- Automated playbook execution hooks
+- Adaptive false-positive suppression
 
-Each agent is independent:
+---
 
-Triage Agent
+## Disclaimer
 
-Detection Agent
+This project is a simulated educational lab. It does **not** connect to production SIEM/XDR systems by default.
 
-Chat Agent
+## Author
 
-Risk Agent
-
-Agents communicate via structured alert objects.
-
-Deterministic Output Contracts
-
-Agents return strict schemas:
-
-No free-form hallucinated output
-
-JSON-only responses
-
-Explicit confidence scores
-
-RAG over Hallucination
-
-Agents do not guess.
-
-They:
-
-Retrieve context
-
-Ground reasoning in retrieved data
-
-Provide explainable output
-
-SOC-Centric Thinking
-
-The system is designed to:
-
-Reduce analyst cognitive load
-
-Reduce triage time
-
-Improve escalation accuracy
-
-Increase alert throughput
-
-Improve signal-to-noise ratio
-
-📈 Example End-to-End Flow
-
-Alert is generated (off-hours admin logon).
-
-Alert is embedded.
-
-Vector DB returns 5 similar historical alerts.
-
-Triage Agent evaluates severity.
-
-Detection Agent generates a new rule.
-
-Analyst reviews recommendation.
-
-Analyst override is logged.
-
-Feedback loop updates confidence model.
-
-🧪 Simulated Use Case
-
-Scenario:
-
-Service account logs in at 2:13 AM
-
-From public IP
-
-No recent baseline history
-
-System Response:
-
-Risk Score: 87
-
-Confidence: 0.91
-
-Escalate to Tier 2
-
-Generate detection rule
-
-Recommend network containment check
-
-📊 Key Concepts Demonstrated
-
-Agentic AI system design
-
-Embedding-based contextual reasoning
-
-Retrieval-Augmented Generation (RAG)
-
-Detection-as-Code automation
-
-Feedback-driven confidence tuning
-
-Security automation engineering
-
-SOC workflow integration
-
-🚀 Future Enhancements
-
-Multi-agent coordination framework
-
-Memory persistence layer
-
-Confidence calibration modeling
-
-Threat intelligence API integration
-
-Auto-playbook execution
-
-Adaptive false positive suppression
-
-🧩 Why This Project Matters
-
-Modern SOC teams face:
-
-Alert fatigue
-
-Staffing shortages
-
-Increasing telemetry volume
-
-High false positive rates
-
-AI agents can:
-
-Scale coverage 5–10x
-
-Reduce triage time
-
-Improve detection quality
-
-Enable analysts to focus on true threats
-
-This lab models that future.
-
-🔐 Disclaimer
-
-This project is a simulated educational lab.
-
-It does not connect to real SIEM, XDR, or production environments.
-
-👤 Author
-
-Brian Hannigan
-AI Security Engineer
+Brian Hannigan  
+AI Security Engineer  
 Detection Engineering | SOC Automation | Agentic AI Systems
